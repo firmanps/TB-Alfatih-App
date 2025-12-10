@@ -9,7 +9,7 @@ import { api } from "@/lib/axios";
 import { Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import UserSwitch from "./dialogconfirm";
-import { showErrorToast } from "../layout/snackbar";
+import { showErrorToast, showSuccessToast } from "../layout/snackbar";
 
 export default function DialogEditUser({ user, open, onOpenChange, onUserUpdate }: { user: any; open?: boolean; onOpenChange?: (open: boolean) => void; onUserUpdate?: (updatedData: any) => void }) {
   // Jika open dan onOpenChange tidak disediakan, gunakan state internal
@@ -67,6 +67,7 @@ export default function DialogEditUser({ user, open, onOpenChange, onUserUpdate 
 
       handleOpenChange(false);
       setPassword(""); // Reset password field setelah save berhasil
+      showSuccessToast("Berhasil Update");
     } catch (error: any) {
       console.error("Gagal menyimpan user:", error.response?.data || error.message);
       showErrorToast(error.response?.data?.message || "Gagal menyimpan perubahan user");

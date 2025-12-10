@@ -1,15 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/axios";
 import { Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
+import { showErrorToast, showSuccessToast } from "../layout/snackbar";
 import UserSwitch from "./dialogconfirm";
-import { showErrorToast } from "../layout/snackbar";
 
 export default function DialogEditUser({ user, open, onOpenChange, onUserUpdate }: { user: any; open?: boolean; onOpenChange?: (open: boolean) => void; onUserUpdate?: (updatedData: any) => void }) {
   // Jika open dan onOpenChange tidak disediakan, gunakan state internal
@@ -67,6 +66,7 @@ export default function DialogEditUser({ user, open, onOpenChange, onUserUpdate 
 
       handleOpenChange(false);
       setPassword(""); // Reset password field setelah save berhasil
+      showSuccessToast("Berhasil Update");
     } catch (error: any) {
       console.error("Gagal menyimpan user:", error.response?.data || error.message);
       showErrorToast(error.response?.data?.message || "Gagal menyimpan perubahan user");
