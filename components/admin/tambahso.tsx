@@ -3,9 +3,20 @@
 import { showErrorToast, showSuccessToast } from "@/components/layout/snackbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { api, apiRequest } from "@/lib/axios";
 import { Plus, X } from "lucide-react";
 import Image from "next/image";
@@ -14,7 +25,11 @@ import FilterSearch from "../layout/filter-search";
 
 // Import Calendar components
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { SelectPortal } from "@radix-ui/react-select";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
@@ -63,7 +78,9 @@ interface TambahSOProps {
 export default function TambahSO({ onSuccess }: TambahSOProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>(
+    []
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSelectOpen, setIsSelectOpen] = useState(false);
@@ -110,8 +127,10 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        const res = await apiRequest("/private/product");
-        const productsData = Array.isArray(res?.data?.data) ? res.data.data : [];
+        const res = await apiRequest("/private/product?desc=true&active=true");
+        const productsData = Array.isArray(res?.data?.data)
+          ? res.data.data
+          : [];
         setProducts(productsData);
         setFilteredProducts(productsData);
       } catch (error) {
@@ -127,7 +146,11 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
   }, []);
 
   // Handle search dari FilterSearch
-  const handleSearch = (filters: { query: string; tahap: string; kategori: string }) => {
+  const handleSearch = (filters: {
+    query: string;
+    tahap: string;
+    kategori: string;
+  }) => {
     setSearchQuery(filters.query);
 
     let filtered = products;
@@ -135,18 +158,27 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
     // Filter berdasarkan search query
     if (filters.query) {
       filtered = filtered.filter(
-        (product) => product.name.toLowerCase().includes(filters.query.toLowerCase()) || product.spesifikasi?.toLowerCase().includes(filters.query.toLowerCase()) || product.code?.toLowerCase().includes(filters.query.toLowerCase())
+        (product) =>
+          product.name.toLowerCase().includes(filters.query.toLowerCase()) ||
+          product.spesifikasi
+            ?.toLowerCase()
+            .includes(filters.query.toLowerCase()) ||
+          product.code?.toLowerCase().includes(filters.query.toLowerCase())
       );
     }
 
     // Filter berdasarkan tahap - gunakan kategori.tahap.id
     if (filters.tahap) {
-      filtered = filtered.filter((product) => product.kategori?.tahap?.id === filters.tahap);
+      filtered = filtered.filter(
+        (product) => product.kategori?.tahap?.id === filters.tahap
+      );
     }
 
     // Filter berdasarkan kategori - gunakan kategori.id
     if (filters.kategori) {
-      filtered = filtered.filter((product) => product.kategori?.id === filters.kategori);
+      filtered = filtered.filter(
+        (product) => product.kategori?.id === filters.kategori
+      );
     }
 
     setFilteredProducts(filtered);
@@ -184,10 +216,16 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
 
   // Tambah produk ke daftar
   const addProduct = (product: Product) => {
-    const existingProduct = selectedProducts.find((p) => p.product_id === product.id);
+    const existingProduct = selectedProducts.find(
+      (p) => p.product_id === product.id
+    );
 
     if (existingProduct) {
-      setSelectedProducts((prev) => prev.map((p) => (p.product_id === product.id ? { ...p, jumlah: p.jumlah + 1 } : p)));
+      setSelectedProducts((prev) =>
+        prev.map((p) =>
+          p.product_id === product.id ? { ...p, jumlah: p.jumlah + 1 } : p
+        )
+      );
     } else {
       setSelectedProducts((prev) => [
         ...prev,
@@ -207,12 +245,18 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
       return;
     }
 
-    setSelectedProducts((prev) => prev.map((p) => (p.product_id === productId ? { ...p, jumlah: newJumlah } : p)));
+    setSelectedProducts((prev) =>
+      prev.map((p) =>
+        p.product_id === productId ? { ...p, jumlah: newJumlah } : p
+      )
+    );
   };
 
   // Hapus produk dari daftar
   const removeProduct = (productId: string) => {
-    setSelectedProducts((prev) => prev.filter((p) => p.product_id !== productId));
+    setSelectedProducts((prev) =>
+      prev.filter((p) => p.product_id !== productId)
+    );
   };
 
   // Handle form input change
@@ -295,7 +339,9 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
 
       <DialogContent className="max-w-4xl w-full rounded-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold border-b pb-2">Detail Pesanan</DialogTitle>
+          <DialogTitle className="text-xl font-semibold border-b pb-2">
+            Detail Pesanan
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 mt-2">
@@ -303,11 +349,19 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium">Nama</label>
-              <Input placeholder="Masukkan Nama Pelanggan" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} />
+              <Input
+                placeholder="Masukkan Nama Pelanggan"
+                value={formData.name}
+                onChange={(e) => handleInputChange("name", e.target.value)}
+              />
             </div>
             <div>
               <label className="text-sm font-medium">Alamat</label>
-              <Input placeholder="Masukkan Alamat" value={formData.alamat} onChange={(e) => handleInputChange("alamat", e.target.value)} />
+              <Input
+                placeholder="Masukkan Alamat"
+                value={formData.alamat}
+                onChange={(e) => handleInputChange("alamat", e.target.value)}
+              />
             </div>
 
             <div className="relative">
@@ -315,12 +369,24 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
               <div className="relative">
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start text-left font-normal h-10">
-                      {date ? format(date, "PPP", { locale: id }) : <span>Pilih tanggal</span>}
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal h-10"
+                    >
+                      {date ? (
+                        format(date, "PPP", { locale: id })
+                      ) : (
+                        <span>Pilih tanggal</span>
+                      )}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
-                    <Calendar mode="single" selected={date} onSelect={setDate} locale={id} />
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      locale={id}
+                    />
                   </PopoverContent>
                 </Popover>
               </div>
@@ -328,7 +394,11 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
 
             <div>
               <label className="text-sm font-medium">No. Hp</label>
-              <Input placeholder="Masukkan No.HP Pelanggan" value={formData.no_hp} onChange={(e) => handleInputChange("no_hp", e.target.value)} />
+              <Input
+                placeholder="Masukkan No.HP Pelanggan"
+                value={formData.no_hp}
+                onChange={(e) => handleInputChange("no_hp", e.target.value)}
+              />
             </div>
           </div>
 
@@ -339,37 +409,75 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
                 <p className=" mb-3 border-b pb-2">Produk yang ingin dibeli</p>
                 <div className="space-y-3">
                   {selectedProducts.map((item) => {
-                    const imageUrl = getProductImageUrl(item.product.img_products);
+                    const imageUrl = getProductImageUrl(
+                      item.product.img_products
+                    );
 
                     return (
-                      <div key={item.product_id} className="flex items-center gap-3 p-3 bg-white rounded-lg">
+                      <div
+                        key={item.product_id}
+                        className="flex items-center gap-3 p-3 bg-white rounded-lg"
+                      >
                         {/* Gambar Produk */}
                         <div className="flex-shrink-0">
                           {imageUrl ? (
-                            <Image src={imageUrl} alt={item.product.name} width={70} height={70} className="rounded-md object-cover" />
+                            <Image
+                              src={imageUrl}
+                              alt={item.product.name}
+                              width={70}
+                              height={70}
+                              className="rounded-md object-cover"
+                            />
                           ) : (
                             <div className="w-[70px] h-[70px] bg-gray-200 rounded-md flex items-center justify-center">
-                              <span className="text-xs text-gray-500">No Image</span>
+                              <span className="text-xs text-gray-500">
+                                No Image
+                              </span>
                             </div>
                           )}
                         </div>
 
                         {/* Detail Produk */}
                         <div className="flex-grow">
-                          <p className="text-sm font-medium">{item.product?.name || "Produk tidak ditemukan"}</p>
+                          <p className="text-sm font-medium">
+                            {item.product?.name || "Produk tidak ditemukan"}
+                          </p>
                           <p className="text-sm">
-                            Harga : <span className="text-[#0892D8] ml-1">{formatCurrency(item.product?.harga_jual || 0)}</span>
+                            Harga :{" "}
+                            <span className="text-[#0892D8] ml-1">
+                              {formatCurrency(item.product?.harga_jual || 0)}
+                            </span>
                           </p>
                           <p className="text-sm mt-1 flex items-center gap-2">
                             Jumlah :
-                            <Input type="number" value={item.jumlah} onChange={(e) => updateProductQuantity(item.product_id, Number(e.target.value))} className="w-16 h-7 text-center" min="1" />
+                            <Input
+                              type="number"
+                              value={item.jumlah}
+                              onChange={(e) =>
+                                updateProductQuantity(
+                                  item.product_id,
+                                  Number(e.target.value)
+                                )
+                              }
+                              className="w-16 h-7 text-center"
+                              min="1"
+                            />
                           </p>
                         </div>
 
                         {/* Tombol Hapus */}
                         <div className="flex flex-col items-end gap-2">
-                          <p className="text-sm font-medium text-[#0892D8]">{formatCurrency((item.product?.harga_jual || 0) * item.jumlah)}</p>
-                          <Button variant="ghost" size="sm" onClick={() => removeProduct(item.product_id)} className="h-6 w-6 p-0 hover:bg-red-100">
+                          <p className="text-sm font-medium text-[#0892D8]">
+                            {formatCurrency(
+                              (item.product?.harga_jual || 0) * item.jumlah
+                            )}
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeProduct(item.product_id)}
+                            className="h-6 w-6 p-0 hover:bg-red-100"
+                          >
                             <X className="h-4 w-4 text-red-500" />
                           </Button>
                         </div>
@@ -380,7 +488,9 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
                   {/* TOTAL HARGA */}
                   <div className="flex justify-between items-center pt-3 border-t">
                     <span className="font-medium">Total Harga:</span>
-                    <span className="text-lg font-bold text-[#0892D8]">{formatCurrency(totalHarga)}</span>
+                    <span className="text-lg font-bold text-[#0892D8]">
+                      {formatCurrency(totalHarga)}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -398,21 +508,39 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
                 </SelectTrigger>
 
                 <SelectPortal>
-                  <SelectContent position="popper" side="bottom" align="start" sideOffset={5} className="w-[var(--radix-select-trigger-width)] max-h-96 p-0 ">
+                  <SelectContent
+                    position="popper"
+                    side="bottom"
+                    align="start"
+                    sideOffset={5}
+                    className="w-[var(--radix-select-trigger-width)] max-h-96 p-0 "
+                  >
                     {/* FilterSearch */}
-                    <div className="p-3 border-b bg-gray-50 sticky top-0 z-10" onPointerDown={(e) => e.stopPropagation()}>
-                      <FilterSearch onSearch={handleSearch} onReset={handleResetFilters} />
+                    <div
+                      className="p-3 border-b bg-gray-50 sticky top-0 z-10"
+                      onPointerDown={(e) => e.stopPropagation()}
+                    >
+                      <FilterSearch
+                        onSearch={handleSearch}
+                        onReset={handleResetFilters}
+                      />
                     </div>
 
                     {/* Daftar Produk */}
                     <div className="max-h-64 overflow-y-auto">
                       {isLoading ? (
-                        <div className="p-4 text-center text-gray-500">Memuat produk...</div>
+                        <div className="p-4 text-center text-gray-500">
+                          Memuat produk...
+                        </div>
                       ) : filteredProducts.length === 0 ? (
-                        <div className="p-4 text-center text-gray-500">Tidak ada produk ditemukan</div>
+                        <div className="p-4 text-center text-gray-500">
+                          Tidak ada produk ditemukan
+                        </div>
                       ) : (
                         filteredProducts.map((product) => {
-                          const imageUrl = getProductImageUrl(product.img_products);
+                          const imageUrl = getProductImageUrl(
+                            product.img_products
+                          );
 
                           return (
                             <div
@@ -426,22 +554,37 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
                               {/* Gambar Produk */}
                               <div className="flex-shrink-0">
                                 {imageUrl ? (
-                                  <Image src={imageUrl} alt={product.name} width={50} height={50} className="rounded-md object-cover" />
+                                  <Image
+                                    src={imageUrl}
+                                    alt={product.name}
+                                    width={50}
+                                    height={50}
+                                    className="rounded-md object-cover"
+                                  />
                                 ) : (
                                   <div className="w-[50px] h-[50px] bg-gray-200 rounded-md flex items-center justify-center">
-                                    <span className="text-xs text-gray-500">No Image</span>
+                                    <span className="text-xs text-gray-500">
+                                      No Image
+                                    </span>
                                   </div>
                                 )}
                               </div>
 
                               {/* Detail Produk */}
                               <div className="flex-grow">
-                                <p className="text-sm font-medium">{product.jenis}</p>
-                                <p className="text-sm text-[#0892D8] font-medium">{formatCurrency(product.harga_jual)}</p>
+                                <p className="text-sm font-medium">
+                                  {product.jenis}
+                                </p>
+                                <p className="text-sm text-[#0892D8] font-medium">
+                                  {formatCurrency(product.harga_jual)}
+                                </p>
                               </div>
 
                               {/* Tombol Tambah */}
-                              <Button size="sm" className="bg-[#0892D8] hover:bg-[#0892D8]/80">
+                              <Button
+                                size="sm"
+                                className="bg-[#0892D8] hover:bg-[#0892D8]/80"
+                              >
                                 <Plus className="h-4 w-4" />
                               </Button>
                             </div>
@@ -465,10 +608,18 @@ export default function TambahSO({ onSuccess }: TambahSOProps) {
 
           {/* BUTTONS - TAMPILAN TETAP SAMA */}
           <div className="flex justify-end gap-3">
-            <Button variant="destructive" className="px-6" onClick={handleBatal}>
+            <Button
+              variant="destructive"
+              className="px-6"
+              onClick={handleBatal}
+            >
               Batal
             </Button>
-            <Button className="bg-[#0892D8] hover:bg-[#0892D8]/80 px-6" onClick={handleSubmit} disabled={selectedProducts.length === 0 || !date}>
+            <Button
+              className="bg-[#0892D8] hover:bg-[#0892D8]/80 px-6"
+              onClick={handleSubmit}
+              disabled={selectedProducts.length === 0 || !date}
+            >
               Buat Sales Order
             </Button>
           </div>
