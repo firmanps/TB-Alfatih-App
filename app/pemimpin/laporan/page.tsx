@@ -3,23 +3,21 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Calendar,
   DollarSign,
   Download,
-  Filter,
   ShoppingCart,
   TrendingUp,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import React, { useEffect, useMemo, useState } from "react";
 
 type FilterKey = "month" | "year";
 
@@ -55,7 +53,6 @@ function formatIDR(n: number) {
 }
 
 function formatCompactID(n: number) {
-  // sederhana: 312500000 -> "Rp 312,5 jt"
   if (n >= 1_000_000_000)
     return `Rp ${(n / 1_000_000_000).toFixed(1).replace(".", ",")} M`;
   if (n >= 1_000_000)
@@ -73,10 +70,824 @@ function formatDateID(iso: string) {
   });
 }
 
+function getMonthName(month: number): string {
+  const months = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+  return months[month - 1] || "";
+}
+
+// Interface untuk props PrintableReport
+interface PrintableReportProps {
+  filterKey: FilterKey;
+  selectedYear: number;
+  selectedMonth: number;
+  summary: SummaryItem[];
+  chartData: ChartPoint[];
+  bestSellingProducts: BestProduct[];
+  latestTransactions: Transaction[];
+  filterLabel: string;
+}
+
+// Komponen untuk konten cetak - akan dirender dalam iframe
+const PrintableReport: React.FC<PrintableReportProps> = ({
+  filterKey,
+  selectedYear,
+  selectedMonth,
+  summary,
+  bestSellingProducts,
+  latestTransactions,
+  filterLabel,
+}) => {
+  const revenue = summary.find((s) => s.key === "revenue")?.value || 0;
+  const transactions =
+    summary.find((s) => s.key === "transactions")?.value || 0;
+  const avgOrder = summary.find((s) => s.key === "avgOrder")?.value || 0;
+  const newCustomers =
+    summary.find((s) => s.key === "newCustomers")?.value || 0;
+
+  const currentDate = new Date();
+  const formattedDate = currentDate.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const formattedTime = currentDate.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  // Total item terjual (asumsi: dari jumlah transaksi)
+  const totalItemsSold = latestTransactions.length * 10; // Contoh perkiraan
+
+  return (
+    <div
+      style={{
+        padding: "20px",
+        fontFamily: "Arial, sans-serif",
+        color: "#000",
+      }}
+    >
+      {/* Header Laporan */}
+      <div style={{ textAlign: "center", marginBottom: "30px" }}>
+        <h1
+          style={{
+            fontSize: "24px",
+            fontWeight: "bold",
+            marginBottom: "5px",
+            color: "#000",
+          }}
+        >
+          LAPORAN PENJUALAN TOKO
+        </h1>
+        <h2
+          style={{
+            fontSize: "20px",
+            fontWeight: "bold",
+            marginBottom: "10px",
+            color: "#000",
+          }}
+        >
+          Toko Bangunan Alafatih
+        </h2>
+        <p style={{ fontSize: "14px", marginBottom: "5px", color: "#000" }}>
+          Jl. Raya Contoh No. 12
+        </p>
+        <p style={{ fontSize: "14px", marginBottom: "20px", color: "#000" }}>
+          Telp: 08xxxxxxxx
+        </p>
+      </div>
+
+      {/* Informasi Laporan */}
+      <div style={{ marginBottom: "30px" }}>
+        <h3
+          style={{
+            fontSize: "18px",
+            fontWeight: "bold",
+            marginBottom: "10px",
+            color: "#000",
+          }}
+        >
+          Informasi Laporan
+        </h3>
+        <table
+          style={{ width: "100%", borderCollapse: "collapse", color: "#000" }}
+        >
+          <tbody>
+            <tr style={{ borderBottom: "1px solid #000" }}>
+              <td
+                style={{
+                  padding: "8px",
+                  fontWeight: "bold",
+                  width: "30%",
+                  color: "#000",
+                }}
+              >
+                Jenis Laporan
+              </td>
+              <td style={{ padding: "8px", color: "#000" }}>
+                {filterKey === "month"
+                  ? "Penjualan Bulanan"
+                  : "Penjualan Tahunan"}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: "1px solid #000" }}>
+              <td style={{ padding: "8px", fontWeight: "bold", color: "#000" }}>
+                Periode
+              </td>
+              <td style={{ padding: "8px", color: "#000" }}>
+                {filterKey === "month"
+                  ? `${getMonthName(selectedMonth)} ${selectedYear}`
+                  : `Tahun ${selectedYear}`}
+              </td>
+            </tr>
+            <tr style={{ borderBottom: "1px solid #000" }}>
+              <td style={{ padding: "8px", fontWeight: "bold", color: "#000" }}>
+                Tanggal
+              </td>
+              <td style={{ padding: "8px", color: "#000" }}>{formattedDate}</td>
+            </tr>
+            <tr style={{ borderBottom: "1px solid #000" }}>
+              <td style={{ padding: "8px", fontWeight: "bold", color: "#000" }}>
+                Dicetak Oleh
+              </td>
+              <td style={{ padding: "8px", color: "#000" }}>Supervisor</td>
+            </tr>
+            <tr>
+              <td style={{ padding: "8px", fontWeight: "bold", color: "#000" }}>
+                Waktu Cetak
+              </td>
+              <td style={{ padding: "8px", color: "#000" }}>{formattedTime}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Ringkasan Penjualan */}
+      <div style={{ marginBottom: "30px" }}>
+        <h3
+          style={{
+            fontSize: "18px",
+            fontWeight: "bold",
+            marginBottom: "15px",
+            color: "#000",
+          }}
+        >
+          Ringkasan Penjualan
+        </h3>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            border: "1px solid #000",
+            color: "#000",
+          }}
+        >
+          <thead>
+            <tr style={{ backgroundColor: "#f0f0f0" }}>
+              <th
+                style={{
+                  padding: "10px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Keterangan
+              </th>
+              <th
+                style={{
+                  padding: "10px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Nilai
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Total Transaksi
+              </td>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                {transactions.toLocaleString("id-ID")}
+              </td>
+            </tr>
+            <tr>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Total Item Terjual
+              </td>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                {totalItemsSold.toLocaleString("id-ID")}
+              </td>
+            </tr>
+            <tr>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Total Pendapatan
+              </td>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                {formatIDR(revenue)}
+              </td>
+            </tr>
+            <tr>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Rata-rata per Order
+              </td>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                {formatIDR(avgOrder)}
+              </td>
+            </tr>
+            <tr>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Pelanggan Baru
+              </td>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                {newCustomers.toLocaleString("id-ID")}
+              </td>
+            </tr>
+            <tr>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Metode Pembayaran
+              </td>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Cash & Transfer
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Produk Terlaris */}
+      <div style={{ marginBottom: "30px", pageBreakInside: "avoid" }}>
+        <h3
+          style={{
+            fontSize: "18px",
+            fontWeight: "bold",
+            marginBottom: "15px",
+            color: "#000",
+          }}
+        >
+          Produk Terlaris
+        </h3>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            border: "1px solid #000",
+            color: "#000",
+          }}
+        >
+          <thead>
+            <tr style={{ backgroundColor: "#f0f0f0" }}>
+              <th
+                style={{
+                  padding: "10px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                No
+              </th>
+              <th
+                style={{
+                  padding: "10px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Nama Produk
+              </th>
+              <th
+                style={{
+                  padding: "10px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Pendapatan
+              </th>
+              <th
+                style={{
+                  padding: "10px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Persentase
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {bestSellingProducts.map((product, index) => (
+              <tr key={product.name}>
+                <td
+                  style={{
+                    padding: "10px",
+                    border: "1px solid #000",
+                    color: "#000",
+                  }}
+                >
+                  {index + 1}
+                </td>
+                <td
+                  style={{
+                    padding: "10px",
+                    border: "1px solid #000",
+                    color: "#000",
+                  }}
+                >
+                  {product.name}
+                </td>
+                <td
+                  style={{
+                    padding: "10px",
+                    border: "1px solid #000",
+                    color: "#000",
+                  }}
+                >
+                  Rp {product.revenueJt} jt
+                </td>
+                <td
+                  style={{
+                    padding: "10px",
+                    border: "1px solid #000",
+                    color: "#000",
+                  }}
+                >
+                  {product.percent}%
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Detail Transaksi */}
+      <div style={{ marginBottom: "30px", pageBreakInside: "avoid" }}>
+        <h3
+          style={{
+            fontSize: "18px",
+            fontWeight: "bold",
+            marginBottom: "15px",
+            color: "#000",
+          }}
+        >
+          Detail Penjualan
+        </h3>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            border: "1px solid #000",
+            color: "#000",
+          }}
+        >
+          <thead>
+            <tr style={{ backgroundColor: "#f0f0f0" }}>
+              <th
+                style={{
+                  padding: "8px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                No
+              </th>
+              <th
+                style={{
+                  padding: "8px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Waktu
+              </th>
+              <th
+                style={{
+                  padding: "8px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                No Transaksi
+              </th>
+              <th
+                style={{
+                  padding: "8px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Nama Produk
+              </th>
+              <th
+                style={{
+                  padding: "8px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Qty
+              </th>
+              <th
+                style={{
+                  padding: "8px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Harga
+              </th>
+              <th
+                style={{
+                  padding: "8px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Subtotal
+              </th>
+              <th
+                style={{
+                  padding: "8px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Status
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {latestTransactions.map((trx, index) => {
+              const date = new Date(trx.dateISO);
+              const time = date.toLocaleTimeString("id-ID", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              // Asumsi quantity (untuk contoh, kita buat random 1-10)
+              const quantity = Math.floor(Math.random() * 10) + 1;
+              const price = Math.floor(trx.amount / quantity);
+
+              return (
+                <tr key={trx.id}>
+                  <td
+                    style={{
+                      padding: "8px",
+                      border: "1px solid #000",
+                      color: "#000",
+                    }}
+                  >
+                    {index + 1}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      border: "1px solid #000",
+                      color: "#000",
+                    }}
+                  >
+                    {time}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      border: "1px solid #000",
+                      color: "#000",
+                    }}
+                  >
+                    {trx.id}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      border: "1px solid #000",
+                      color: "#000",
+                    }}
+                  >
+                    {trx.product}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      border: "1px solid #000",
+                      color: "#000",
+                    }}
+                  >
+                    {quantity}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      border: "1px solid #000",
+                      color: "#000",
+                    }}
+                  >
+                    {formatIDR(price)}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      border: "1px solid #000",
+                      color: "#000",
+                    }}
+                  >
+                    {formatIDR(trx.amount)}
+                  </td>
+                  <td
+                    style={{
+                      padding: "8px",
+                      border: "1px solid #000",
+                      color: "#000",
+                    }}
+                  >
+                    {trx.status}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Rekapitulasi */}
+      <div style={{ marginBottom: "30px", pageBreakInside: "avoid" }}>
+        <h3
+          style={{
+            fontSize: "18px",
+            fontWeight: "bold",
+            marginBottom: "15px",
+            color: "#000",
+          }}
+        >
+          Rekapitulasi
+        </h3>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            border: "1px solid #000",
+            color: "#000",
+          }}
+        >
+          <thead>
+            <tr style={{ backgroundColor: "#f0f0f0" }}>
+              <th
+                style={{
+                  padding: "10px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Keterangan
+              </th>
+              <th
+                style={{
+                  padding: "10px",
+                  textAlign: "left",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Jumlah
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Total Penjualan
+              </td>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                {formatIDR(revenue)}
+              </td>
+            </tr>
+            <tr>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Diskon
+              </td>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Rp 0
+              </td>
+            </tr>
+            <tr>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Pajak
+              </td>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  color: "#000",
+                }}
+              >
+                Rp 0
+              </td>
+            </tr>
+            <tr>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                Total Bersih
+              </td>
+              <td
+                style={{
+                  padding: "10px",
+                  border: "1px solid #000",
+                  fontWeight: "bold",
+                  color: "#000",
+                }}
+              >
+                {formatIDR(revenue)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Tanda Tangan */}
+      <div
+        style={{
+          marginTop: "60px",
+          textAlign: "center",
+          pageBreakInside: "avoid",
+        }}
+      >
+        <div style={{ marginBottom: "80px" }}>
+          <p style={{ color: "#000" }}>Supervisor</p>
+          <br />
+          <br />
+          <br />
+          <p style={{ color: "#000" }}>( __________________ )</p>
+        </div>
+        <div style={{ fontSize: "12px", color: "#000", marginTop: "20px" }}>
+          <p>Laporan ini sah dan berlaku tanpa stempel basah</p>
+          <p>
+            Dokumen ini dicetak dari Sistem Manajemen Toko Bangunan Alafatih
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function LaporanPenjualan() {
   const [filterKey, setFilterKey] = useState<FilterKey>("month");
+  const [selectedYear, setSelectedYear] = useState<number>(2024);
+  const [selectedMonth, setSelectedMonth] = useState<number>(
+    new Date().getMonth() + 1
+  );
   const [filterLabel, setFilterLabel] = useState("Bulanan");
-  const [counts, setCounts] = useState<number[]>([]);
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
   const [bestSellingProducts, setBestSellingProducts] = useState<BestProduct[]>(
     []
@@ -87,58 +898,152 @@ export default function LaporanPenjualan() {
   const [summary, setSummary] = useState<SummaryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [isPrinting, setIsPrinting] = useState(false);
+  // Generate tahun untuk dropdown (5 tahun terakhir)
+  const years = Array.from({ length: 5 }, (_, i) => {
+    const currentYear = new Date().getFullYear();
+    return currentYear - i;
+  });
 
-  const fetchReport = async (mode: FilterKey) => {
+  const months = [
+    { value: 1, label: "Januari" },
+    { value: 2, label: "Februari" },
+    { value: 3, label: "Maret" },
+    { value: 4, label: "April" },
+    { value: 5, label: "Mei" },
+    { value: 6, label: "Juni" },
+    { value: 7, label: "Juli" },
+    { value: 8, label: "Agustus" },
+    { value: 9, label: "September" },
+    { value: 10, label: "Oktober" },
+    { value: 11, label: "November" },
+    { value: 12, label: "Desember" },
+  ];
+
+  const fetchReport = async (mode: FilterKey, year: number, month?: number) => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/report/sales?mode=${mode}&year=2024`, {
+      let url = `/api/report/sales?mode=${mode}&year=${year}`;
+      if (mode === "month" && month) {
+        url += `&month=${month}`;
+      }
+
+      const res = await fetch(url, {
         cache: "no-store",
       });
       if (!res.ok) throw new Error("Gagal mengambil data laporan");
       const json = (await res.json()) as ApiResponse;
 
       setFilterLabel(json.filter.label);
-      setCounts(json.counts);
       setChartData(json.chart);
       setBestSellingProducts(json.bestProducts);
       setLatestTransactions(json.latestTransactions);
       setSummary(json.summary);
+    } catch (error) {
+      console.error("Error fetching report:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchReport(filterKey);
-  }, [filterKey]);
+    if (filterKey === "month") {
+      fetchReport(filterKey, selectedYear, selectedMonth);
+    } else {
+      fetchReport(filterKey, selectedYear);
+    }
+  }, [filterKey, selectedYear, selectedMonth]);
 
   const handleExportPDF = () => {
-    const prevTitle = document.title;
+    // Buat konten untuk cetak
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
 
-    const fileName =
-      filterKey === "month"
-        ? "laporan-penjualan-toko-bangunan-bulanan-2024"
-        : "laporan-penjualan-toko-bangunan-tahunan-2024";
+    // Buat struktur HTML untuk print
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Laporan Penjualan - ${
+          filterKey === "month"
+            ? getMonthName(selectedMonth) + " " + selectedYear
+            : "Tahun " + selectedYear
+        }</title>
+        <style>
+          @media print {
+            @page {
+              size: A4;
+              margin: 20mm;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              color: #000;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              page-break-inside: avoid;
+            }
+            th, td {
+              border: 1px solid #000;
+              padding: 8px;
+              text-align: left;
+            }
+            th {
+              background-color: #f0f0f0;
+              font-weight: bold;
+            }
+            .page-break {
+              page-break-before: always;
+            }
+          }
+        </style>
+      </head>
+      <body>
+    `);
 
-    document.title = fileName;
-    setIsPrinting(true);
+    // Buat elemen sementara untuk merender komponen
+    const tempDiv = document.createElement("div");
+    document.body.appendChild(tempDiv);
 
-    setTimeout(() => {
-      window.print();
+    // Import React dan ReactDOM client untuk merender
+    import("react-dom/client").then(({ createRoot }) => {
+      const root = createRoot(tempDiv);
+      root.render(
+        React.createElement(PrintableReport, {
+          filterKey,
+          selectedYear,
+          selectedMonth,
+          summary,
+          chartData,
+          bestSellingProducts: bestSellingProducts,
+          latestTransactions: latestTransactions,
+          filterLabel,
+        })
+      );
+
+      // Tunggu sebentar untuk merender, lalu ambil HTML
       setTimeout(() => {
-        document.title = prevTitle;
-        setIsPrinting(false);
-      }, 300);
-    }, 200);
-  };
+        const content = tempDiv.innerHTML;
 
-  const yTicks = useMemo(() => {
-    if (counts.length) return counts;
-    const maxVal = Math.max(...chartData.map((c) => c.total), 0);
-    const step = Math.ceil(maxVal / 5) || 1;
-    return Array.from({ length: 6 }, (_, i) => i * step);
-  }, [counts, chartData]);
+        printWindow.document.write(`
+          ${content}
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() {
+                window.close();
+              };
+            }
+          </script>
+        `);
+        printWindow.document.write("</body></html>");
+        printWindow.document.close();
+
+        // Hapus elemen sementara
+        document.body.removeChild(tempDiv);
+      }, 100);
+    });
+  };
 
   // mapping summary -> card
   const summaryCards = useMemo(() => {
@@ -191,27 +1096,10 @@ export default function LaporanPenjualan() {
 
   return (
     <>
-      <style jsx global>{`
-        @media print {
-          body {
-            background: white !important;
-          }
-          .no-print {
-            display: none !important;
-          }
-          .print-avoid-break {
-            break-inside: avoid;
-            page-break-inside: avoid;
-          }
-          #report-container {
-            padding: 0 !important;
-          }
-        }
-      `}</style>
-
-      <div className="p-4 space-y-8" id="report-container">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 print-avoid-break">
+      {/* Tampilan utama */}
+      <div className="p-4 space-y-8">
+        {/* Header utama */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold">Laporan Penjualan</h1>
             <p className="text-gray-500 text-sm">
@@ -220,11 +1108,7 @@ export default function LaporanPenjualan() {
           </div>
 
           {/* Controls */}
-          <div
-            className={`flex items-center gap-3 ${
-              isPrinting ? "no-print" : "no-print"
-            }`}
-          >
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="flex bg-gray-100 p-1 rounded-lg">
               <button
                 className={`px-3 py-1 rounded-md text-sm ${
@@ -250,9 +1134,47 @@ export default function LaporanPenjualan() {
               </button>
             </div>
 
-            <div className="flex items-center bg-gray-100 px-4 py-2 rounded-md text-gray-600 text-sm">
-              2024
+            {/* Pilih Tahun */}
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-gray-500" />
+              <Select
+                value={selectedYear.toString()}
+                onValueChange={(value) => setSelectedYear(parseInt(value))}
+              >
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Pilih Tahun" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            {/* Pilih Bulan (hanya tampil saat mode bulanan) */}
+            {filterKey === "month" && (
+              <Select
+                value={selectedMonth.toString()}
+                onValueChange={(value) => setSelectedMonth(parseInt(value))}
+              >
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Pilih Bulan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((month) => (
+                    <SelectItem
+                      key={month.value}
+                      value={month.value.toString()}
+                    >
+                      {month.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
             <Button
               onClick={handleExportPDF}
@@ -260,9 +1182,21 @@ export default function LaporanPenjualan() {
               type="button"
             >
               <Download className="w-4 h-4 mr-2" />
-              Export
+              Cetak PDF
             </Button>
           </div>
+        </div>
+
+        {/* Info Periode */}
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+          <h3 className="font-semibold text-blue-800 mb-2">Periode Laporan:</h3>
+          <p className="text-blue-700">
+            {filterKey === "month"
+              ? `Laporan Bulanan - ${getMonthName(
+                  selectedMonth
+                )} ${selectedYear}`
+              : `Laporan Tahunan - ${selectedYear}`}
+          </p>
         </div>
 
         {/* Loading */}
@@ -271,7 +1205,7 @@ export default function LaporanPenjualan() {
         ) : (
           <>
             {/* Summary cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 print-avoid-break">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {summaryCards.map((card) => {
                 const Icon = card.icon;
                 return (
@@ -300,87 +1234,8 @@ export default function LaporanPenjualan() {
               })}
             </div>
 
-            {/* Chart */}
-            <Card className="p-4 rounded-lg shadow-sm print-avoid-break">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-base font-semibold">
-                  Total Penjualan {filterLabel} (juta)
-                </h2>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Filter className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">{filterLabel}</span>
-                </div>
-              </div>
-
-              <CardContent className="p-0">
-                <div className="h-[260px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      data={chartData}
-                      margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <defs>
-                        <linearGradient
-                          id="chartGradient"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor="#3B82F6"
-                            stopOpacity={0.25}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="#3B82F6"
-                            stopOpacity={0.05}
-                          />
-                        </linearGradient>
-                      </defs>
-
-                      <XAxis
-                        dataKey="name"
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 12 }}
-                      />
-                      <YAxis
-                        ticks={yTicks}
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 12 }}
-                      />
-                      <Tooltip
-                        cursor={{
-                          stroke: "#3B82F6",
-                          strokeWidth: 1,
-                          opacity: 0.2,
-                        }}
-                        contentStyle={{
-                          borderRadius: 8,
-                          borderColor: "#E5E7EB",
-                          fontSize: 12,
-                        }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="total"
-                        stroke="#0892D8"
-                        strokeWidth={3}
-                        fillOpacity={1}
-                        fill="url(#chartGradient)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Produk Terlaris */}
-            <Card className="p-4 rounded-lg shadow-sm print-avoid-break">
+            <Card className="p-4 rounded-lg shadow-sm">
               <h2 className="text-base font-semibold mb-4">Produk Terlaris</h2>
               <CardContent className="p-0 space-y-4">
                 {bestSellingProducts.map((p) => (
@@ -411,7 +1266,7 @@ export default function LaporanPenjualan() {
             </Card>
 
             {/* Transaksi Terbaru */}
-            <Card className="p-4 rounded-lg shadow-sm print-avoid-break">
+            <Card className="p-4 rounded-lg shadow-sm">
               <h2 className="text-base font-semibold mb-4">
                 Transaksi Terbaru
               </h2>
