@@ -29,7 +29,8 @@ export default function SidebarPm({ open, setOpen }: SidebarProps) {
 
   const menus = [
     { name: "Dashboard", icon: Home, href: "/pemimpin/dashboard" },
-    { name: "Laporan", icon: ClipboardCheck, href: "/pemimpin/laporan" },
+    { name: "Laporan Produk", icon: ClipboardCheck, href: "/pemimpin/laporan" },
+    { name: "Aktivitas staff", icon: ClipboardCheck, href: "/pemimpin/aktivitas-staff" },
     { name: "Profile Saya", icon: User, href: "/pemimpin/profile-saya" },
   ];
 
