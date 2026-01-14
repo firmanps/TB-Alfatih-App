@@ -159,13 +159,14 @@ const PrintableReport: React.FC<PrintableReportProps> = ({
             color: "#000",
           }}
         >
-          Toko Bangunan Alafatih
+          Toko Bangunan Alfatih
         </h2>
         <p style={{ fontSize: "14px", marginBottom: "5px", color: "#000" }}>
-          Jl. Raya Contoh No. 12
+          Jl. Kubang Raya, Tarai Bangun, Kec. Tambang, Kabupaten Kampar, Riau
+          28293
         </p>
         <p style={{ fontSize: "14px", marginBottom: "20px", color: "#000" }}>
-          Telp: 08xxxxxxxx
+          Telp: 082384939176
         </p>
       </div>
 
@@ -222,7 +223,7 @@ const PrintableReport: React.FC<PrintableReportProps> = ({
               <td style={{ padding: "8px", fontWeight: "bold", color: "#000" }}>
                 Dicetak Oleh
               </td>
-              <td style={{ padding: "8px", color: "#000" }}>Supervisor</td>
+              <td style={{ padding: "8px", color: "#000" }}>Pemilik Tokoh</td>
             </tr>
             <tr>
               <td style={{ padding: "8px", fontWeight: "bold", color: "#000" }}>
@@ -864,16 +865,95 @@ const PrintableReport: React.FC<PrintableReportProps> = ({
         }}
       >
         <div style={{ marginBottom: "80px" }}>
-          <p style={{ color: "#000" }}>Supervisor</p>
-          <br />
-          <br />
-          <br />
-          <p style={{ color: "#000" }}>( __________________ )</p>
+          <p
+            style={{
+              color: "#000",
+              fontWeight: "bold",
+              fontSize: "16px",
+              marginBottom: "30px",
+            }}
+          >
+            Pemilik Toko
+          </p>
+
+          {/* Gambar tanda tangan */}
+          <div
+            style={{
+              margin: "20px auto 10px",
+              width: "200px",
+              height: "100px",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            {/* Ganti /signature.png dengan path gambar tanda tangan Anda */}
+            <img
+              src="/assets/ttd.png"
+              alt="Tanda Tangan Pemilik Toko"
+              style={{
+                maxWidth: "100%",
+                maxHeight: "100%",
+                objectFit: "contain",
+              }}
+            />
+          </div>
+
+          {/* Nama Pemilik Toko */}
+          <div
+            style={{
+              marginTop: "15px",
+              paddingTop: "15px",
+              borderTop: "1px solid #000",
+              width: "250px",
+              margin: "15px auto 0",
+            }}
+          >
+            <p
+              style={{
+                color: "#000",
+                fontWeight: "bold",
+                fontSize: "14px",
+                marginBottom: "5px",
+              }}
+            >
+              Dedi Wijaya Alfatih
+            </p>
+            <p
+              style={{
+                color: "#000",
+                fontSize: "12px",
+              }}
+            >
+              Pemilik Toko Bangunan Alafatih
+            </p>
+          </div>
         </div>
-        <div style={{ fontSize: "12px", color: "#000", marginTop: "20px" }}>
-          <p>Laporan ini sah dan berlaku tanpa stempel basah</p>
+
+        <div
+          style={{
+            fontSize: "12px",
+            color: "#000",
+            marginTop: "40px",
+            paddingTop: "20px",
+            borderTop: "1px solid #ddd",
+          }}
+        >
+          <p>
+            <strong>Laporan ini sah dan berlaku tanpa stempel basah</strong>
+          </p>
           <p>
             Dokumen ini dicetak dari Sistem Manajemen Toko Bangunan Alafatih
+          </p>
+          <p style={{ marginTop: "10px", fontSize: "11px" }}>
+            Berlaku sampai dengan:{" "}
+            {new Date(
+              new Date().setMonth(new Date().getMonth() + 1)
+            ).toLocaleDateString("id-ID", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
           </p>
         </div>
       </div>
